@@ -1,7 +1,7 @@
 package com.logicea.cards.entity;
 
 
-import com.logicea.cards.dto.UserRole;
+import com.logicea.cards.models.UserRole;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -10,7 +10,7 @@ import java.sql.Timestamp;
 @Entity
 @Table(name = "users")
 @Data
-public class User {
+public class UserEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -32,17 +32,12 @@ public class User {
     @Column(name = "updated_on", nullable = false)
     private Timestamp updatedOn;
 
-    // Constructors, getters, and setters
-
-    // Default constructor for JPA
-    public User() {
+    public UserEntity() {
     }
 
-    public User(String email, String password, UserRole role) {
+    public UserEntity(String email, String password, UserRole role) {
         this.email = email;
         this.password = password;
         this.role = role;
     }
-
-    // Getters and setters
 }

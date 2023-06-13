@@ -1,4 +1,4 @@
-package com.logicea.cards.dto;
+package com.logicea.cards.models;
 
 public enum UserRole {
   Member,

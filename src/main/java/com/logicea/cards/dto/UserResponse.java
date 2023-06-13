@@ -1,9 +1,9 @@
-package com.logicea.cards.models;
+package com.logicea.cards.dto;
 
 import lombok.Data;
 
 @Data
-public class Response {
+public class UserResponse {
     String email;
     String  role;
     String token;

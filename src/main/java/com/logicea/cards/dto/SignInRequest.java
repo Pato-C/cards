@@ -1,4 +1,4 @@
-package com.logicea.cards.models;
+package com.logicea.cards.dto;
 
 import lombok.Data;
 

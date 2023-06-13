@@ -6,9 +6,7 @@ import org.springframework.stereotype.Component;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
-import java.security.Key;
 import java.util.Arrays;
-import java.util.Base64;
 
 @Component
 public class JwtKeyProvider {

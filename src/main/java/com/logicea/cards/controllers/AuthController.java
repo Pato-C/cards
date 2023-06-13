@@ -1,9 +1,9 @@
 package com.logicea.cards.controllers;
 
 import com.logicea.cards.component.JwtTokenProvider;
-import com.logicea.cards.entity.User;
-import com.logicea.cards.models.Response;
-import com.logicea.cards.models.SignInRequest;
+import com.logicea.cards.entity.UserEntity;
+import com.logicea.cards.dto.UserResponse;
+import com.logicea.cards.dto.SignInRequest;
 import com.logicea.cards.service.UserService;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
@@ -28,23 +28,23 @@ public class AuthController {
 
     @PostMapping("/signIn")
     public ResponseEntity<?> signIn(@RequestBody SignInRequest signInRequest) {
+           UserResponse response;
         try {
-            Response response;
             String email = signInRequest.getEmail();
             String password = signInRequest.getPassword();
-            User user = userService.authenticateUser(email, password);
+            UserEntity user = userService.authenticateUser(email, password);
             if (user == null) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid email or password");
             }
             String token = tokenProvider.generateToken(user);
-            response = new Response();
+            response = new UserResponse();
             response.setEmail(user.getEmail());
             response.setRole(String.valueOf(user.getRole()));
             response.setToken(token);
             return ResponseEntity.ok(response);
         } catch (Exception e)
         {
-            logger.error("Error logging in user "+e);
+            logger.error("Error logging in user: "+e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Couldn't process request, please check server logs");
         }
 
