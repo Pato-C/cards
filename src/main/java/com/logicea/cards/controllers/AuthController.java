@@ -5,6 +5,8 @@ import com.logicea.cards.entity.UserEntity;
 import com.logicea.cards.dto.UserResponse;
 import com.logicea.cards.dto.SignInRequest;
 import com.logicea.cards.service.UserService;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +18,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("cards/auth")
+@RequestMapping("cards")
+@Api(tags = "Cards Endpoints")
 public class AuthController {
     public static Logger logger = LogManager.getLogger("com.logicea.cards");
 
@@ -27,6 +30,7 @@ public class AuthController {
     private JwtTokenProvider tokenProvider;
 
     @PostMapping("/signIn")
+    @ApiOperation("Log in Endpoint")
     public ResponseEntity<?> signIn(@RequestBody SignInRequest signInRequest) {
            UserResponse response;
         try {

@@ -12,6 +12,7 @@ import jakarta.persistence.criteria.Predicate;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -45,6 +46,7 @@ public class CardService {
             card.setColor(color);
             card.setStatus(CardStatus.TO_DO);
             card.setCreatedOn(LocalDateTime.now());
+            card.setUpdatedOn(LocalDateTime.now());
             return cardRepository.save(card);
         } catch (Exception e) {
             logger.error("Error occurred while creating card: " + e.getMessage());
@@ -66,6 +68,7 @@ public class CardService {
                 dto.setColor(card.getColor());
                 dto.setStatus(card.getStatus());
                 dto.setCreatedOn(card.getCreatedOn());
+                dto.setUpdatedOn(card.getUpdatedOn());
                 response.add(dto);
             }
             return new PageImpl<>(response, pageable, cards.getTotalElements());
@@ -117,7 +120,20 @@ public class CardService {
             logger.error("Error occurred while creating specification: " + e.getMessage());
             throw new RuntimeException("Error fetching card!!");
         }
-        
+
+    }
+    public CardsEntity getCardById(Long cardId)  {
+        return cardRepository.findById(cardId).orElse(null);
+    }
+    public CardsEntity updateCard(CardsEntity card) {
+        return cardRepository.save(card);
+    }
+
+
+    public void deleteCard(Long cardId) {
+        CardsEntity card = cardRepository.findById(cardId).orElse(null);
+        assert card != null;
+        cardRepository.delete(card);
     }
     public CardResponse convertToResponse(Optional<CardsEntity> cardEntity) {
         CardResponse cardResponse = new CardResponse();
@@ -128,8 +144,11 @@ public class CardService {
         cardResponse.setColor(cardEntity.get().getColor());
         cardResponse.setStatus(cardEntity.get().getStatus());
         cardResponse.setCreatedOn(cardEntity.get().getCreatedOn());
+        cardResponse.setUpdatedOn(cardEntity.get().getUpdatedOn());
         return cardResponse;
     }
+
+
 
 
 

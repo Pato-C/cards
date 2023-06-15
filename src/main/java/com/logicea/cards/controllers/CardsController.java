@@ -4,11 +4,14 @@ import com.logicea.cards.component.JwtTokenProvider;
 import com.logicea.cards.dto.CardRequest;
 import com.logicea.cards.dto.CardResponse;
 import com.logicea.cards.dto.CardSearchCriteria;
+import com.logicea.cards.dto.CardUpdateRequest;
 import com.logicea.cards.entity.CardsEntity;
 import com.logicea.cards.entity.UserEntity;
 import com.logicea.cards.models.CardStatus;
 import com.logicea.cards.models.UserRole;
 import com.logicea.cards.service.CardService;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,10 +25,12 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpClientErrorException;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/cards")
+@RequestMapping("cards")
+@Api(tags = "Cards Endpoints")
 public class CardsController {
 
     @Autowired
@@ -33,7 +38,7 @@ public class CardsController {
     @Autowired
     JwtTokenProvider jwtTokenProvider;
     public static Logger logger = LogManager.getLogger("com.logicea.cards");
-
+    @ApiOperation("Create a Card Endpoint")
     @PostMapping("/createCards")
     public ResponseEntity<?> createCard(@RequestBody CardRequest cardRequestDto,
                                         @RequestHeader(name="Authorization") String authorizationHeader) {
@@ -52,7 +57,9 @@ public class CardsController {
         }
 
     }
+
     @GetMapping("/searchCards")
+    @ApiOperation("Search Cards Endpoint")
     public ResponseEntity<?> searchCards(
             @RequestHeader("Authorization") String authorizationHeader,
             @RequestParam(required = false) String name,
@@ -92,6 +99,7 @@ public class CardsController {
     }
 
     @GetMapping("/searchUserCard")
+    @ApiOperation("Search Specific Card Endpoint")
     public ResponseEntity<CardResponse> getCardByName(@RequestParam("name") String cardName, @RequestHeader("Authorization") String authorizationHeader) {
         try {
             String token = authorizationHeader.substring(7);
@@ -105,6 +113,68 @@ public class CardsController {
             return ResponseEntity.notFound().build();
         }
     }
+    @PutMapping("/updateCard/{id}")
+    @ApiOperation("Update Specific Card Endpoint")
+    public ResponseEntity<?> updateCard(
+            @PathVariable("id") Long cardId,
+            @RequestBody CardUpdateRequest cardUpdateRequest,
+            @RequestHeader("Authorization") String authorizationHeader) {
+        String token = authorizationHeader.substring(7);
+        UserEntity user = jwtTokenProvider.getUserFromToken(token);
+        Optional<CardsEntity> optionalCard = Optional.ofNullable(cardService.getCardById(cardId));
+        if (optionalCard.isPresent()) {
+            CardsEntity card = optionalCard.get();
+            if (card.getUser().getId().equals(user.getId())) {
+                if (cardUpdateRequest.getName() != null) {
+                    card.setName(cardUpdateRequest.getName());
+                }
+                if (cardUpdateRequest.getDescription() != null) {
+                    card.setDescription(cardUpdateRequest.getDescription());
+                }
+                if (cardUpdateRequest.getColor() != null) {
+                    card.setColor(cardUpdateRequest.getColor());
+                }
+                if (cardUpdateRequest.getStatus() != null) {
+                    card.setStatus(cardUpdateRequest.getStatus());
+                }
+                card.setUpdatedOn(LocalDateTime.now());
+                CardsEntity newCard = cardService.updateCard(card);
+                CardResponse updatedCard = cardService.convertToResponse(Optional.ofNullable(newCard));
+
+                return ResponseEntity.ok(updatedCard);
+            } else {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @DeleteMapping("/deleteCard/{cardId}")
+    @ApiOperation("Delete Specific Card Endpoint")
+    public ResponseEntity<?> deleteCard(
+            @RequestHeader("Authorization") String authorizationHeader,
+            @PathVariable Long cardId
+    ) {
+        try {
+            String token = authorizationHeader.substring(7);
+            UserEntity user = jwtTokenProvider.getUserFromToken(token);
+            boolean isAdmin = user.getRole() == UserRole.Admin;
+            Long userId = user.getId();
+            CardsEntity card = cardService.getCardById(cardId);
+            if (card == null) {
+                return ResponseEntity.notFound().build();
+            }
+            if (!isAdmin && !card.getUser().getId().equals(userId)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
+            cardService.deleteCard(cardId);
+            return ResponseEntity.ok().body("Succefully Deleted!");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error Deleting Card Please Check Server Logs!!");
+        }
+    }
+
 
 
 
