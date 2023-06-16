@@ -45,8 +45,8 @@ public class JwtTokenProvider {
         catch (Exception e)
         {
          logger.error("Error generating token "+e);
+            throw new RuntimeException("Error generating token!!");
         }
-        return null;
     }
     public UserEntity getUserFromToken(String token) {
         logger.info("Going to introspect token");
@@ -65,7 +65,7 @@ public class JwtTokenProvider {
             }
         } catch (Exception e) {
             logger.error("Error introspecting token " + e);
-            throw new RuntimeException("Invalid token");
+            throw new RuntimeException("Invalid token!!");
         }
     }
 

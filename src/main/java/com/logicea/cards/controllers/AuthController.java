@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("cards")
-@Api(tags = "Cards Endpoints")
+@Api(tags = "Auth Endpoints")
 public class AuthController {
     public static Logger logger = LogManager.getLogger("com.logicea.cards");
 

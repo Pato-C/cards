@@ -21,12 +21,14 @@ public class UserService {
             if (user != null && user.getPassword().equals(password)) {
                 return user;
             }
+            return null;
         } catch (Exception e)
         {
             logger.error("Error fetching user "+e);
+            throw new RuntimeException("Error fetching user");
         }
 
-        return null;
+
     }
 
 

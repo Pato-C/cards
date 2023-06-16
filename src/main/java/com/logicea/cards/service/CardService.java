@@ -55,6 +55,7 @@ public class CardService {
     }
 
     public Page<CardResponse> searchCards(CardSearchCriteria cardSearchCriteria, Pageable pageable, boolean isAdmin, Long currentUserId) {
+            logger.info("Going to fetch cards");
         try {
             Specification<CardsEntity> specification = createSpecification(cardSearchCriteria, isAdmin, currentUserId);
             Page<CardsEntity> cards = cardRepository.findAll(specification, pageable);
@@ -110,18 +111,19 @@ public class CardService {
             throw new RuntimeException("Error occurred while creating specification!!");
         }
     }
-    public Optional<CardsEntity> getCardByNameAndUser(String cardName, UserEntity user) {
+    public Optional<CardsEntity> getCardByNameAndUser(String cardName, UserEntity user, boolean isAdmin) {
         try {
-            Optional<CardsEntity> card = cardRepository.findByNameAndUser(cardName, user);
-            return card;
+            if (isAdmin) {
+                return cardRepository.findByName(cardName);
+            } else {
+                return cardRepository.findByNameAndUser(cardName, user);
             }
-        catch (Exception e)
-        {
-            logger.error("Error occurred while creating specification: " + e.getMessage());
+        } catch (Exception e) {
+            logger.error("Error occurred while fetching card: " + e.getMessage());
             throw new RuntimeException("Error fetching card!!");
         }
-
     }
+
     public CardsEntity getCardById(Long cardId)  {
         return cardRepository.findById(cardId).orElse(null);
     }

@@ -23,7 +23,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpClientErrorException;
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -38,10 +37,11 @@ public class CardsController {
     @Autowired
     JwtTokenProvider jwtTokenProvider;
     public static Logger logger = LogManager.getLogger("com.logicea.cards");
+
     @ApiOperation("Create a Card Endpoint")
     @PostMapping("/createCards")
     public ResponseEntity<?> createCard(@RequestBody CardRequest cardRequestDto,
-                                        @RequestHeader(name="Authorization") String authorizationHeader) {
+                                        @RequestHeader(name = "Authorization") String authorizationHeader) {
         try {
             String token = authorizationHeader.substring(7);
             if (cardRequestDto.getColor() != null && !cardRequestDto.getColor().matches("^#[0-9a-fA-F]{6}$")) {
@@ -50,9 +50,8 @@ public class CardsController {
             CardsEntity card = cardService.createCard(cardRequestDto, token);
             CardResponse createdCard = cardService.convertToResponse(Optional.ofNullable(card));
             return ResponseEntity.status(HttpStatus.CREATED).body(createdCard);
-        }catch (Exception e)
-        {
-            logger.error("Error creating cards "+e);
+        } catch (Exception e) {
+            logger.error("Error creating cards " + e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Couldn't process request, please check server logs!!");
         }
 
@@ -93,26 +92,40 @@ public class CardsController {
             Page<CardResponse> cardPage = cardService.searchCards(searchCriteria, pageable, isAdmin, userId);
             return ResponseEntity.ok(cardPage);
         } catch (Exception e) {
-            logger.error("Error fetching cards "+e);
+            logger.error("Error fetching cards " + e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Could not process request please check server logs!!");
         }
     }
 
     @GetMapping("/searchUserCard")
     @ApiOperation("Search Specific Card Endpoint")
-    public ResponseEntity<CardResponse> getCardByName(@RequestParam("name") String cardName, @RequestHeader("Authorization") String authorizationHeader) {
+    public ResponseEntity<CardResponse> getCardByName(
+            @RequestParam("name") String cardName,
+            @RequestHeader("Authorization") String authorizationHeader
+    ) {
         try {
             String token = authorizationHeader.substring(7);
             UserEntity user = jwtTokenProvider.getUserFromToken(token);
-            Optional<CardsEntity> card = cardService.getCardByNameAndUser(cardName, user);
-            CardResponse response = cardService.convertToResponse(card);
-            return ResponseEntity.ok(response);
+            boolean isAdmin = user.getRole() == UserRole.Admin;
+            Optional<CardsEntity> card = cardService.getCardByNameAndUser(cardName, user, isAdmin);
+            if (card.isPresent()) {
+                CardResponse response = cardService.convertToResponse(card);
+                return ResponseEntity.ok(response);
+            } else {
+                logger.error("Card not found");
+                return ResponseEntity.notFound().build();
+            }
         } catch (HttpClientErrorException.Unauthorized e) {
+            logger.error("Unauthorized access");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         } catch (Exception e) {
+            logger.error("Card not found " + e);
             return ResponseEntity.notFound().build();
         }
     }
+
+
+
     @PutMapping("/updateCard/{id}")
     @ApiOperation("Update Specific Card Endpoint")
     public ResponseEntity<?> updateCard(
