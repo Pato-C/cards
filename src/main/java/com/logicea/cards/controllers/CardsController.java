@@ -28,7 +28,7 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("cards")
+@RequestMapping("cards/")
 @Api(tags = "Cards Endpoints")
 public class CardsController {
 
@@ -39,7 +39,7 @@ public class CardsController {
     public static Logger logger = LogManager.getLogger("com.logicea.cards");
 
     @ApiOperation("Create a Card Endpoint")
-    @PostMapping("/createCards")
+    @PostMapping("createCard")
     public ResponseEntity<?> createCard(@RequestBody CardRequest cardRequestDto,
                                         @RequestHeader(name = "Authorization") String authorizationHeader) {
         try {
@@ -57,7 +57,7 @@ public class CardsController {
 
     }
 
-    @GetMapping("/searchCards")
+    @GetMapping("searchCards")
     @ApiOperation("Search Cards Endpoint")
     public ResponseEntity<?> searchCards(
             @RequestHeader("Authorization") String authorizationHeader,
@@ -97,7 +97,7 @@ public class CardsController {
         }
     }
 
-    @GetMapping("/searchUserCard")
+    @GetMapping("getUserCard")
     @ApiOperation("Search Specific Card Endpoint")
     public ResponseEntity<CardResponse> getCardByName(
             @RequestParam("name") String cardName,
@@ -126,7 +126,7 @@ public class CardsController {
 
 
 
-    @PutMapping("/updateCard/{id}")
+    @PutMapping("updateCard/{id}")
     @ApiOperation("Update Specific Card Endpoint")
     public ResponseEntity<?> updateCard(
             @PathVariable("id") Long cardId,
@@ -163,7 +163,7 @@ public class CardsController {
         }
     }
 
-    @DeleteMapping("/deleteCard/{cardId}")
+    @DeleteMapping("deleteCard/{cardId}")
     @ApiOperation("Delete Specific Card Endpoint")
     public ResponseEntity<?> deleteCard(
             @RequestHeader("Authorization") String authorizationHeader,
