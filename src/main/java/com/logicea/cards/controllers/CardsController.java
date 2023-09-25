@@ -39,7 +39,7 @@ public class CardsController {
     public static Logger logger = LogManager.getLogger("com.logicea.cards");
 
     @ApiOperation("Create a Card Endpoint")
-    @PostMapping("createCard")
+    @PostMapping
     public ResponseEntity<?> createCard(@RequestBody CardRequest cardRequestDto,
                                         @RequestHeader(name = "Authorization") String authorizationHeader) {
         try {
@@ -57,7 +57,7 @@ public class CardsController {
 
     }
 
-    @GetMapping("searchCards")
+    @GetMapping()
     @ApiOperation("Search Cards Endpoint")
     public ResponseEntity<?> searchCards(
             @RequestHeader("Authorization") String authorizationHeader,
@@ -108,13 +108,9 @@ public class CardsController {
             UserEntity user = jwtTokenProvider.getUserFromToken(token);
             boolean isAdmin = user.getRole() == UserRole.Admin;
             Optional<CardsEntity> card = cardService.getCardByNameAndUser(cardName, user, isAdmin);
-            if (card.isPresent()) {
-                CardResponse response = cardService.convertToResponse(card);
-                return ResponseEntity.ok(response);
-            } else {
-                logger.error("Card not found");
-                return ResponseEntity.notFound().build();
-            }
+
+            return card.isPresent()?ResponseEntity.ok(cardService.convertToResponse(card)):
+                    ResponseEntity.notFound().build();
         } catch (HttpClientErrorException.Unauthorized e) {
             logger.error("Unauthorized access");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
@@ -126,7 +122,7 @@ public class CardsController {
 
 
 
-    @PutMapping("updateCard/{id}")
+    @PutMapping("/{id}")
     @ApiOperation("Update Specific Card Endpoint")
     public ResponseEntity<?> updateCard(
             @PathVariable("id") Long cardId,
@@ -163,25 +159,25 @@ public class CardsController {
         }
     }
 
-    @DeleteMapping("deleteCard/{cardId}")
+    @DeleteMapping("/{id}")
     @ApiOperation("Delete Specific Card Endpoint")
     public ResponseEntity<?> deleteCard(
             @RequestHeader("Authorization") String authorizationHeader,
-            @PathVariable Long cardId
+            @PathVariable Long id
     ) {
         try {
             String token = authorizationHeader.substring(7);
             UserEntity user = jwtTokenProvider.getUserFromToken(token);
             boolean isAdmin = user.getRole() == UserRole.Admin;
             Long userId = user.getId();
-            CardsEntity card = cardService.getCardById(cardId);
+            CardsEntity card = cardService.getCardById(id);
             if (card == null) {
                 return ResponseEntity.notFound().build();
             }
             if (!isAdmin && !card.getUser().getId().equals(userId)) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
             }
-            cardService.deleteCard(cardId);
+            cardService.deleteCard(id);
             return ResponseEntity.ok().body("Succefully Deleted!");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error Deleting Card Please Check Server Logs!!");
