@@ -28,7 +28,7 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("cards/")
+@RequestMapping("cards")
 @Api(tags = "Cards Endpoints")
 public class CardsController {
 
